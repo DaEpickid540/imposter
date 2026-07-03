@@ -20,7 +20,8 @@
       "Bash(Remove-Item \"C:\\\\Users\\\\daepi\\\\OneDrive\\\\Pictures\\\\Documents\\\\GitHub\\\\imposter\\\\.git\\\\index.lock\" -Force)",
       "Bash(git commit -m '@ *)",
       "PowerShell(git add -A)",
-      "PowerShell(git commit -m \"feat: custom words, My Packs, light/dark mode, server mode redesign, PWA + devil/angel icon, favicon, centered layout\")"
+      "PowerShell(git commit -m \"feat: custom words, My Packs, light/dark mode, server mode redesign, PWA + devil/angel icon, favicon, centered layout\")",
+      "PowerShell(firebase deploy --only hosting --project imposter-web-game)"
     ]
   }
 }

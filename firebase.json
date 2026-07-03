@@ -1,5 +1,6 @@
 {
   "hosting": {
+    "site": "theimposter",
     "public": ".",
     "ignore": [
       "firebase.json",
