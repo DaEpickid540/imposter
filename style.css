@@ -1173,6 +1173,300 @@ button, a, [role="button"],
 
 .hidden { display: none !important; }
 
+/* ══════════════════════════════════ CUSTOM WORDS + PACK BUILDER */
+
+/* Section header row — label + "My Packs →" button side by side */
+.section-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.btn-my-packs {
+  background: none;
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-sm);
+  color: var(--text-dim);
+  font-size: 13px;
+  font-weight: 700;
+  padding: 8px 14px;
+  min-height: 36px;
+  cursor: pointer;
+  font-family: inherit;
+  white-space: nowrap;
+  transition: color 0.12s, border-color 0.12s;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+.btn-my-packs:active { color: var(--text); border-color: var(--text); }
+
+/* Custom word input stack */
+.custom-word-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+/* Small muted helper text for scope clarification */
+.scope-hint {
+  font-size: 12px;
+  color: var(--text-dim);
+  text-align: center;
+  line-height: 1.45;
+  padding: 2px 4px;
+}
+
+/* "Save to a pack?" inline prompt */
+.save-pack-prompt {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+.save-prompt-main {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.save-prompt-label {
+  font-size: 14px;
+  color: var(--text-dim);
+}
+.btn-save-to-pack {
+  background: none;
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 700;
+  padding: 10px 16px;
+  min-height: 40px;
+  cursor: pointer;
+  font-family: inherit;
+  white-space: nowrap;
+  transition: background 0.12s;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+.btn-save-to-pack:active { background: var(--surface2); }
+
+/* Custom badge inside pack button */
+.custom-badge {
+  display: inline-block;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 1px 5px;
+  margin-left: 4px;
+  vertical-align: middle;
+  line-height: 1.6;
+}
+.pack-btn-custom.selected .custom-badge {
+  border-color: var(--text-dim);
+}
+
+/* ══════════════════════════════════ PACK MANAGER MODAL */
+
+.pack-mgr-panel {
+  gap: 0;
+  padding-bottom: max(24px, calc(var(--safe-bottom) + 16px));
+}
+
+.pack-mgr-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 4px 0 16px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.pack-mgr-title {
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: -0.3px;
+}
+
+.btn-pack-mgr-close {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-sm);
+  color: var(--text-dim);
+  font-size: 16px;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.12s;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+.btn-pack-mgr-close:active { background: var(--surface2); color: var(--text); }
+
+.pack-mgr-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  padding-top: 16px;
+  flex: 1;
+}
+
+.pack-mgr-empty {
+  font-size: 14px;
+  color: var(--text-dim);
+  text-align: center;
+  padding: 8px 0 16px;
+}
+
+/* Individual pack card */
+.pack-mgr-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.pack-mgr-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.pmgr-pack-name { font-size: 15px; font-weight: 700; }
+.pmgr-word-count { font-size: 12px; color: var(--text-dim); font-weight: 600; }
+
+.pmgr-words { display: flex; flex-direction: column; }
+
+.pmgr-word-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.pmgr-word-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.pmgr-word {
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pmgr-hint {
+  font-size: 12px;
+  color: var(--text-dim);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pmgr-del-word {
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-dim);
+  font-size: 18px;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+.pmgr-del-word:active { background: var(--surface2); color: var(--text); }
+
+.pmgr-add-form {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+.pmgr-add-fields {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.pmgr-add-fields .text-input {
+  height: 46px;
+  font-size: 14px;
+  padding: 0 12px;
+}
+
+.pmgr-add-btn {
+  width: 46px;
+  height: 46px;
+  min-width: 46px;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-size: 26px;
+  font-weight: 300;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  line-height: 1;
+  align-self: flex-end;
+  transition: background 0.12s;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+.pmgr-add-btn:active { background: var(--border); }
+
+.pmgr-delete-pack-btn {
+  width: 100%;
+  padding: 14px 16px;
+  background: none;
+  border: none;
+  color: var(--text-faint);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+  font-family: inherit;
+  transition: color 0.12s;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+.pmgr-delete-pack-btn:active { color: var(--red); }
+
 /* ══════════════════════════════════ THEME TOGGLE */
 
 .btn-theme-toggle {

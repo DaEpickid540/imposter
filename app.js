@@ -14,6 +14,9 @@ const state = {
     hintMode: 'hint',      // 'hint' | 'none'
     trollEnabled: false,
     wordPack: 'office',
+    useCustomWords: false,
+    customPlayerWord: '',
+    customImposterHint: '',
   },
   game: {
     currentWord: null,
@@ -104,10 +107,42 @@ const App = {
     UI.renderPackGrid('pack-grid');
   },
 
+  toggleCustomWords(enabled) {
+    state.settings.useCustomWords = enabled;
+    const packSection = document.getElementById('pack-section');
+    const block = document.getElementById('custom-words-block');
+    if (enabled) {
+      packSection.classList.add('hidden');
+      block.classList.remove('hidden');
+    } else {
+      packSection.classList.remove('hidden');
+      block.classList.add('hidden');
+      document.getElementById('save-to-pack-prompt').classList.add('hidden');
+    }
+  },
+
+  onCustomWordInput() {
+    const word = document.getElementById('custom-player-word').value.trim();
+    const prompt = document.getElementById('save-to-pack-prompt');
+    if (word) prompt.classList.remove('hidden');
+    else prompt.classList.add('hidden');
+  },
+
   // ── Game start ─────────────────────────────────────────
 
   startGame() {
     if (state.players.length < 3) { alert('Need at least 3 players!'); return; }
+
+    if (state.settings.useCustomWords) {
+      const word = document.getElementById('custom-player-word').value.trim();
+      if (!word) {
+        alert('Enter a Player Word to use custom words.');
+        UI.shake(document.getElementById('custom-player-word'));
+        return;
+      }
+      state.settings.customPlayerWord  = word;
+      state.settings.customImposterHint = document.getElementById('custom-imposter-hint').value.trim();
+    }
 
     const max = Math.max(1, Math.floor((state.players.length - 1) / 2));
     if (state.settings.imposterCount > max) state.settings.imposterCount = max;
@@ -123,7 +158,8 @@ const App = {
     state.game.winner     = null;
 
     App.goTo('player-list');
-    document.getElementById('pl-pack-name').textContent  = WORD_PACKS[state.settings.wordPack].name;
+    document.getElementById('pl-pack-name').textContent  =
+      state.settings.useCustomWords ? 'Custom' : WORD_PACKS[state.settings.wordPack].name;
     document.getElementById('pl-round-info').textContent = `Round ${state.roundNumber}`;
     UI.renderPlayerCards();
   },
@@ -164,10 +200,17 @@ const App = {
         <p class="word-value mystery">???</p>
       `;
     } else if (role === 'imposter') {
-      wordArea.innerHTML = `
-        <p class="word-label">Hint</p>
-        <p class="word-value">${sanitize(word)}</p>
-      `;
+      if (!word) {
+        wordArea.innerHTML = `
+          <p class="word-label">Your word</p>
+          <p class="word-value mystery">???</p>
+        `;
+      } else {
+        wordArea.innerHTML = `
+          <p class="word-label">Hint</p>
+          <p class="word-value">${sanitize(word)}</p>
+        `;
+      }
     } else {
       wordArea.innerHTML = `
         <p class="word-label">The word is</p>
@@ -268,12 +311,21 @@ const App = {
 const GameLogic = {
   assignRoles() {
     const players = shuffle(state.players);
-    const pack    = WORD_PACKS[state.settings.wordPack];
-    const entry   = pack.words[Math.floor(Math.random() * pack.words.length)];
 
-    state.game.currentWord = entry.word;
-    state.game.currentHint = entry.hint;
-    state.game.roles       = {};
+    let currentWord, currentHint;
+    if (state.settings.useCustomWords) {
+      currentWord = state.settings.customPlayerWord;
+      currentHint = state.settings.customImposterHint || '';
+    } else {
+      const pack  = WORD_PACKS[state.settings.wordPack];
+      const entry = pack.words[Math.floor(Math.random() * pack.words.length)];
+      currentWord = entry.word;
+      currentHint = entry.hint || '';
+    }
+
+    state.game.currentWord   = currentWord;
+    state.game.currentHint   = currentHint;
+    state.game.roles         = {};
     state.game.wordForPlayer = {};
 
     let idx = 0;
@@ -312,11 +364,28 @@ const UI = {
 
   initSetup() {
     UI.renderChips();
+    CustomPacks.inject();
     UI.renderPackGrid('pack-grid');
     document.getElementById('imposter-count-display').textContent = state.settings.imposterCount;
     document.getElementById('hint-btn').classList.toggle('active', state.settings.hintMode === 'hint');
     document.getElementById('nohint-btn').classList.toggle('active', state.settings.hintMode === 'none');
     document.getElementById('troll-toggle').checked = state.settings.trollEnabled;
+
+    // Restore custom words UI state
+    const cwToggle = document.getElementById('custom-words-toggle');
+    const cwBlock  = document.getElementById('custom-words-block');
+    const packSec  = document.getElementById('pack-section');
+    if (cwToggle) cwToggle.checked = state.settings.useCustomWords;
+    if (cwBlock)  cwBlock.classList.toggle('hidden', !state.settings.useCustomWords);
+    if (packSec)  packSec.classList.toggle('hidden', state.settings.useCustomWords);
+
+    const wordEl = document.getElementById('custom-player-word');
+    const hintEl = document.getElementById('custom-imposter-hint');
+    if (wordEl) wordEl.value = state.settings.customPlayerWord || '';
+    if (hintEl) hintEl.value = state.settings.customImposterHint || '';
+
+    const savePrompt = document.getElementById('save-to-pack-prompt');
+    if (savePrompt) savePrompt.classList.toggle('hidden', !state.settings.customPlayerWord);
   },
 
   renderChips() {
@@ -333,10 +402,10 @@ const UI = {
     const el = document.getElementById(containerId);
     if (!el) return;
     el.innerHTML = Object.entries(WORD_PACKS).map(([id, pack]) => `
-      <button class="pack-btn ${state.settings.wordPack === id ? 'selected' : ''}"
+      <button class="pack-btn ${state.settings.wordPack === id ? 'selected' : ''} ${pack.isCustom ? 'pack-btn-custom' : ''}"
               data-pack="${id}" data-grid="${containerId}">
         <span class="pack-emoji">${pack.emoji}</span>
-        <span class="pack-name">${sanitize(pack.name)}</span>
+        <span class="pack-name">${sanitize(pack.name)}${pack.isCustom ? '<span class="custom-badge">custom</span>' : ''}</span>
       </button>
     `).join('');
   },
@@ -417,6 +486,233 @@ const UI = {
     el.offsetHeight;
     el.style.animation = 'shake 0.3s ease';
     setTimeout(() => { el.style.animation = ''; }, 350);
+  },
+};
+
+// ── Custom Packs (localStorage) ─────────────────────────────
+
+const CustomPacks = {
+  KEY: 'imposter_packs',
+
+  load() {
+    try { return JSON.parse(localStorage.getItem(this.KEY) || '{}'); }
+    catch { return {}; }
+  },
+
+  save(data) { localStorage.setItem(this.KEY, JSON.stringify(data)); },
+
+  getAll() { return this.load(); },
+
+  create(name) {
+    const data = this.load();
+    const id   = 'custom_' + Date.now();
+    data[id]   = { id, name: name.trim(), emoji: '⭐', words: [] };
+    this.save(data);
+    return id;
+  },
+
+  addWord(packId, word, hint) {
+    const data = this.load();
+    if (!data[packId]) return;
+    data[packId].words.push({ word: word.trim(), hint: (hint || '').trim() });
+    this.save(data);
+  },
+
+  removeWord(packId, index) {
+    const data = this.load();
+    if (!data[packId]) return;
+    data[packId].words.splice(index, 1);
+    this.save(data);
+  },
+
+  deletePack(packId) {
+    const data = this.load();
+    delete data[packId];
+    this.save(data);
+    if (state.settings.wordPack === packId) state.settings.wordPack = 'office';
+  },
+
+  // Merge custom packs into WORD_PACKS at runtime
+  inject() {
+    // Remove previously injected ones first
+    Object.keys(WORD_PACKS).forEach(id => {
+      if (id.startsWith('custom_')) delete WORD_PACKS[id];
+    });
+    const data = this.load();
+    Object.values(data).forEach(pack => {
+      WORD_PACKS[pack.id] = {
+        name:     pack.name,
+        emoji:    pack.emoji || '⭐',
+        words:    pack.words.length
+                    ? pack.words
+                    : [{ word: 'Empty pack', hint: 'Add words via My Packs' }],
+        isCustom: true,
+      };
+    });
+  },
+};
+
+// ── Pack Manager UI ──────────────────────────────────────────
+
+const PackMgr = {
+
+  open() {
+    PackMgr._render();
+    document.getElementById('modal-pack-manager').classList.add('active');
+  },
+
+  close() {
+    document.getElementById('modal-pack-manager').classList.remove('active');
+    CustomPacks.inject();
+    UI.renderPackGrid('pack-grid');
+    if (state.settings.wordPack.startsWith('custom_') && !WORD_PACKS[state.settings.wordPack]) {
+      state.settings.wordPack = 'office';
+      UI.renderPackGrid('pack-grid');
+    }
+  },
+
+  maybeClose(e) {
+    if (e.target === document.getElementById('modal-pack-manager')) PackMgr.close();
+  },
+
+  _render() {
+    const data  = CustomPacks.getAll();
+    const packs = Object.values(data);
+    const body  = document.getElementById('pack-mgr-body');
+
+    if (!packs.length) {
+      body.innerHTML = `
+        <p class="pack-mgr-empty">No custom packs yet.<br>Create your first one!</p>
+        <button class="btn-start" onclick="PackMgr._promptCreate()">+ Create Pack</button>
+      `;
+      return;
+    }
+
+    body.innerHTML = `
+      <button class="btn-outline" onclick="PackMgr._promptCreate()">+ Create New Pack</button>
+      ${packs.map(p => PackMgr._packCard(p)).join('')}
+    `;
+  },
+
+  _packCard(pack) {
+    const wordRows = pack.words.map((w, i) => `
+      <div class="pmgr-word-row">
+        <div class="pmgr-word-info">
+          <span class="pmgr-word">${sanitize(w.word)}</span>
+          ${w.hint ? `<span class="pmgr-hint">Hint: ${sanitize(w.hint)}</span>` : ''}
+        </div>
+        <button class="pmgr-del-word" data-del-word-pack="${sanitize(pack.id)}" data-del-word-idx="${i}">×</button>
+      </div>
+    `).join('');
+
+    return `
+      <div class="pack-mgr-card">
+        <div class="pack-mgr-card-header">
+          <span class="pmgr-pack-name">${sanitize(pack.emoji)} ${sanitize(pack.name)}</span>
+          <span class="pmgr-word-count">${pack.words.length} word${pack.words.length !== 1 ? 's' : ''}</span>
+        </div>
+        <div class="pmgr-words">${wordRows}</div>
+        <div class="pmgr-add-form">
+          <div class="pmgr-add-fields">
+            <input type="text" class="text-input" placeholder="Word" maxlength="40"
+                   data-word-for="${sanitize(pack.id)}" autocomplete="off" />
+            <input type="text" class="text-input" placeholder="Hint — optional" maxlength="40"
+                   data-hint-for="${sanitize(pack.id)}" autocomplete="off" />
+          </div>
+          <button class="pmgr-add-btn" data-add-word="${sanitize(pack.id)}">+</button>
+        </div>
+        <button class="pmgr-delete-pack-btn" data-delete-pack="${sanitize(pack.id)}">Delete Pack</button>
+      </div>
+    `;
+  },
+
+  _promptCreate() {
+    const name = prompt('Pack name:');
+    if (!name || !name.trim()) return;
+    CustomPacks.create(name.trim());
+    PackMgr._render();
+  },
+
+  _addWord(packId) {
+    const wordEl = document.querySelector(`[data-word-for="${CSS.escape(packId)}"]`);
+    const hintEl = document.querySelector(`[data-hint-for="${CSS.escape(packId)}"]`);
+    const word   = wordEl ? wordEl.value.trim() : '';
+    const hint   = hintEl ? hintEl.value.trim() : '';
+    if (!word) { if (wordEl) UI.shake(wordEl); return; }
+    CustomPacks.addWord(packId, word, hint);
+    PackMgr._render();
+  },
+
+  _deleteWord(packId, index) {
+    CustomPacks.removeWord(packId, index);
+    PackMgr._render();
+  },
+
+  _deletePack(packId) {
+    const data = CustomPacks.getAll();
+    const pack = data[packId];
+    if (!pack) return;
+    if (!confirm(`Delete "${pack.name}"? This cannot be undone.`)) return;
+    CustomPacks.deletePack(packId);
+    PackMgr._render();
+  },
+
+  // ── "Save to pack?" prompt ────────
+
+  openSavePrompt() {
+    const word = (document.getElementById('custom-player-word') || {}).value?.trim() || '';
+    const hint = (document.getElementById('custom-imposter-hint') || {}).value?.trim() || '';
+    if (!word) { UI.shake(document.getElementById('custom-player-word')); return; }
+
+    const packs = Object.values(CustomPacks.getAll());
+    const body  = document.getElementById('save-pack-body');
+
+    const pickList = packs.map(p => `
+      <button class="btn-outline" style="text-align:left" data-save-to="${sanitize(p.id)}">
+        ${sanitize(p.emoji)} ${sanitize(p.name)}
+        <span style="color:var(--text-dim);font-size:12px;margin-left:6px">${p.words.length} words</span>
+      </button>
+    `).join('');
+
+    body.innerHTML = `
+      <p style="font-size:14px;color:var(--text-dim);text-align:center;padding-bottom:4px">
+        Saving: <strong style="color:var(--text)">${sanitize(word)}</strong>
+        ${hint ? `<br><span style="font-size:12px">Hint: ${sanitize(hint)}</span>` : ''}
+      </p>
+      ${pickList}
+      <button class="btn-outline" onclick="PackMgr._saveToNewPack()">+ Create New Pack</button>
+      <button class="btn-ghost" onclick="PackMgr.closeSavePrompt()">Cancel</button>
+    `;
+
+    document.getElementById('modal-save-pack').classList.add('active');
+  },
+
+  _saveToNewPack() {
+    const name = prompt('New pack name:');
+    if (!name || !name.trim()) return;
+    const id = CustomPacks.create(name.trim());
+    PackMgr._doSave(id);
+  },
+
+  _doSave(packId) {
+    const word = (document.getElementById('custom-player-word') || {}).value?.trim() || '';
+    const hint = (document.getElementById('custom-imposter-hint') || {}).value?.trim() || '';
+    if (!word) return;
+    CustomPacks.addWord(packId, word, hint);
+    PackMgr.closeSavePrompt();
+    const label = document.querySelector('#save-to-pack-prompt .save-prompt-label');
+    if (label) {
+      label.textContent = 'Saved! ✓';
+      setTimeout(() => { label.textContent = 'Save to a pack?'; }, 2000);
+    }
+  },
+
+  closeSavePrompt() {
+    document.getElementById('modal-save-pack').classList.remove('active');
+  },
+
+  maybeSaveClose(e) {
+    if (e.target === document.getElementById('modal-save-pack')) PackMgr.closeSavePrompt();
   },
 };
 
@@ -785,6 +1081,22 @@ document.addEventListener('click', e => {
   // Server host voting card (dynamic content inside server-player-content)
   const hostVoteCard = t.closest('[data-host-vote]');
   if (hostVoteCard) { Server.hostVote(hostVoteCard.dataset.hostVote); return; }
+
+  // Pack manager — add word to pack
+  const addWordBtn = t.closest('[data-add-word]');
+  if (addWordBtn) { PackMgr._addWord(addWordBtn.dataset.addWord); return; }
+
+  // Pack manager — delete a word entry
+  const delWordBtn = t.closest('[data-del-word-pack]');
+  if (delWordBtn) { PackMgr._deleteWord(delWordBtn.dataset.delWordPack, parseInt(delWordBtn.dataset.delWordIdx, 10)); return; }
+
+  // Pack manager — delete entire pack
+  const delPackBtn = t.closest('[data-delete-pack]');
+  if (delPackBtn) { PackMgr._deletePack(delPackBtn.dataset.deletePack); return; }
+
+  // Save-to-pack modal — pick a pack
+  const saveToBtn = t.closest('[data-save-to]');
+  if (saveToBtn) { PackMgr._doSave(saveToBtn.dataset.saveTo); return; }
 });
 
 // ── Init ─────────────────────────────────────────────────────
@@ -794,6 +1106,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (input) input.addEventListener('keydown', e => { if (e.key === 'Enter') App.addPlayer(); });
 
   App._initTheme();
+  CustomPacks.inject();
   UI.renderPackGrid('pack-grid');
   checkURLRoom();
 });

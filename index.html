@@ -62,9 +62,40 @@
       </section>
 
       <!-- Word Pack -->
-      <section class="setup-section">
-        <h3 class="section-label">Word Pack</h3>
+      <section class="setup-section" id="pack-section">
+        <div class="section-header-row">
+          <h3 class="section-label">Word Pack</h3>
+          <button class="btn-my-packs" onclick="PackMgr.open()">My Packs →</button>
+        </div>
         <div class="pack-grid" id="pack-grid"></div>
+      </section>
+
+      <!-- Custom Words -->
+      <section class="setup-section">
+        <div class="toggle-row">
+          <div class="toggle-info">
+            <h3 class="section-label no-margin">Use Custom Words</h3>
+            <p class="setting-desc">Enter your own word for this round</p>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="custom-words-toggle" onchange="App.toggleCustomWords(this.checked)">
+            <span class="slider-track"></span>
+          </label>
+        </div>
+        <div id="custom-words-block" class="hidden">
+          <div class="custom-word-fields">
+            <input type="text" id="custom-player-word" class="text-input" placeholder="Player Word (required)" maxlength="40" autocomplete="off" oninput="App.onCustomWordInput()" />
+            <input type="text" id="custom-imposter-hint" class="text-input" placeholder="Imposter Hint — optional" maxlength="40" autocomplete="off" />
+          </div>
+          <p class="scope-hint">These words are for this round only and won't be saved.</p>
+          <div id="save-to-pack-prompt" class="save-pack-prompt hidden">
+            <div class="save-prompt-main">
+              <span class="save-prompt-label">Save to a pack?</span>
+              <button class="btn-save-to-pack" onclick="PackMgr.openSavePrompt()">Save →</button>
+            </div>
+            <p class="scope-hint">Saved packs are stored on this device only and won't sync to other devices.</p>
+          </div>
+        </div>
       </section>
 
       <!-- Imposter Count -->
@@ -275,6 +306,28 @@
       <p id="vote-name" class="vote-result-name"></p>
       <p id="vote-verdict" class="vote-result-verdict"></p>
       <button class="btn-done" onclick="App.closeVoteModal()">Continue</button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ PACK MANAGER MODAL -->
+  <div id="modal-pack-manager" class="modal" onclick="PackMgr.maybeClose(event)">
+    <div class="modal-panel pack-mgr-panel">
+      <div class="pack-mgr-header">
+        <h3 class="pack-mgr-title">My Packs</h3>
+        <button class="btn-pack-mgr-close" onclick="PackMgr.close()">✕</button>
+      </div>
+      <div id="pack-mgr-body" class="pack-mgr-body"></div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ SAVE TO PACK MODAL -->
+  <div id="modal-save-pack" class="modal" onclick="PackMgr.maybeSaveClose(event)">
+    <div class="modal-panel">
+      <div class="pack-mgr-header">
+        <h3 class="pack-mgr-title">Save to Pack</h3>
+        <button class="btn-pack-mgr-close" onclick="PackMgr.closeSavePrompt()">✕</button>
+      </div>
+      <div id="save-pack-body" class="pack-mgr-body"></div>
     </div>
   </div>
 
