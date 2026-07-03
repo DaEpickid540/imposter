@@ -1,0 +1,20 @@
+{
+  "rules": {
+    "rooms": {
+      "$roomCode": {
+        ".read": true,
+        ".write": true,
+        "players": {
+          "$playerName": {
+            ".read": true,
+            ".write": true
+          }
+        },
+        "roles": {
+          ".read": true,
+          ".write": "data.parent().child('host').exists()"
+        }
+      }
+    }
+  }
+}

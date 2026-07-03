@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#000000">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>Imposter</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
+</head>
+<body>
+
+  <!-- ═══════════════════════════════════════════ HOME SCREEN -->
+  <div id="screen-home" class="screen active">
+    <div class="home-content">
+      <div class="home-logo">
+        <div class="logo-mark">?</div>
+        <h1 class="home-title">IMPOSTER</h1>
+        <p class="home-sub">Social Deduction</p>
+      </div>
+      <div class="home-buttons">
+        <button class="btn-mode" onclick="App.goTo('setup', 'single')">
+          <div class="btn-mode-icon">📱</div>
+          <div class="btn-mode-text">
+            <span class="btn-mode-label">Single Phone</span>
+            <span class="btn-mode-desc">Pass the phone around</span>
+          </div>
+        </button>
+        <button class="btn-mode" onclick="App.goTo('server-home')">
+          <div class="btn-mode-icon">🌐</div>
+          <div class="btn-mode-text">
+            <span class="btn-mode-label">Server Mode</span>
+            <span class="btn-mode-desc">Everyone on their own device</span>
+          </div>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ SETUP SCREEN -->
+  <div id="screen-setup" class="screen">
+    <div class="screen-header">
+      <button class="btn-back" onclick="App.goTo('home')">←</button>
+      <h2 class="screen-title">Game Setup</h2>
+      <div class="header-spacer"></div>
+    </div>
+    <div class="screen-body">
+
+      <!-- Players -->
+      <section class="setup-section">
+        <h3 class="section-label">Players</h3>
+        <div id="player-chips" class="chip-list"></div>
+        <div class="add-player-row">
+          <input type="text" id="player-name-input" class="text-input" placeholder="Add player name…" maxlength="20" autocomplete="off" />
+          <button class="btn-add" onclick="App.addPlayer()">+</button>
+        </div>
+      </section>
+
+      <!-- Word Pack -->
+      <section class="setup-section">
+        <h3 class="section-label">Word Pack</h3>
+        <div class="pack-grid" id="pack-grid"></div>
+      </section>
+
+      <!-- Imposter Count -->
+      <section class="setup-section">
+        <h3 class="section-label">Imposters</h3>
+        <div class="counter-row">
+          <button class="btn-counter" onclick="App.changeImposterCount(-1)">−</button>
+          <span id="imposter-count-display" class="counter-value">1</span>
+          <button class="btn-counter" onclick="App.changeImposterCount(1)">+</button>
+        </div>
+      </section>
+
+      <!-- Hint Mode -->
+      <section class="setup-section">
+        <h3 class="section-label">Imposter gets…</h3>
+        <div class="toggle-group">
+          <button class="toggle-btn active" id="hint-btn" onclick="App.setHintMode('hint')">Hint Word</button>
+          <button class="toggle-btn" id="nohint-btn" onclick="App.setHintMode('none')">No Hint (??)</button>
+        </div>
+      </section>
+
+      <!-- Troll -->
+      <section class="setup-section">
+        <div class="toggle-row">
+          <div class="toggle-info">
+            <h3 class="section-label no-margin">Enable Troll</h3>
+            <p class="setting-desc">Gets the real word, acts suspicious for chaos</p>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="troll-toggle" onchange="App.setTroll(this.checked)">
+            <span class="slider-track"></span>
+          </label>
+        </div>
+      </section>
+
+      <button class="btn-start" onclick="App.startGame()">Start Game →</button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ PLAYER LIST SCREEN -->
+  <div id="screen-player-list" class="screen">
+    <div class="screen-header">
+      <button class="btn-back" onclick="App.confirmBack()">←</button>
+      <div class="header-center">
+        <h2 id="pl-pack-name" class="screen-title">Pack</h2>
+        <span id="pl-round-info" class="header-badge">Round 1</span>
+      </div>
+      <button class="btn-vote" onclick="App.enterVoting()">Vote →</button>
+    </div>
+    <div class="reveal-hint">
+      <p id="pl-instructions">Tap your name to see your secret role</p>
+    </div>
+    <div id="player-cards" class="cards-grid"></div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ VOTING SCREEN -->
+  <div id="screen-voting" class="screen">
+    <div class="screen-header">
+      <button class="btn-back" onclick="App.exitVoting()">←</button>
+      <h2 class="screen-title">Vote</h2>
+      <div class="header-spacer"></div>
+    </div>
+    <p class="voting-hint">Tap the player you think is the Imposter</p>
+    <div id="voting-cards" class="cards-grid voting-mode"></div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ END SCREEN -->
+  <div id="screen-end" class="screen end-screen">
+    <div class="end-content">
+      <div id="end-result-banner" class="end-banner"></div>
+
+      <div class="end-word-box">
+        <p class="end-word-label">The word was</p>
+        <p id="end-word" class="end-word-value"></p>
+      </div>
+
+      <div id="end-roles-list" class="end-roles"></div>
+
+      <div class="end-buttons">
+        <button class="btn-start" onclick="App.playAgain()">Play Again</button>
+        <button class="btn-outline" onclick="App.goTo('setup')">Change Settings</button>
+        <button class="btn-ghost" onclick="App.goTo('home')">Home</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ SERVER HOME -->
+  <div id="screen-server-home" class="screen">
+    <div class="screen-header">
+      <button class="btn-back" onclick="App.goTo('home')">←</button>
+      <h2 class="screen-title">Server Mode</h2>
+      <div class="header-spacer"></div>
+    </div>
+    <div class="screen-body">
+      <button class="btn-mode" onclick="Server.createRoom()">
+        <div class="btn-mode-icon">➕</div>
+        <div class="btn-mode-text">
+          <span class="btn-mode-label">Create Room</span>
+          <span class="btn-mode-desc">Host a new game</span>
+        </div>
+      </button>
+
+      <div class="divider"><span>or join a room</span></div>
+
+      <div class="join-section">
+        <input type="text" id="join-name-input" class="text-input" placeholder="Your name" maxlength="20" autocomplete="off" />
+        <input type="text" id="join-code-input" class="text-input code-input" placeholder="ROOM CODE" maxlength="6" autocomplete="off" />
+        <button class="btn-start" onclick="Server.joinRoom()">Join Room →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ SERVER LOBBY (HOST) -->
+  <div id="screen-server-lobby" class="screen">
+    <div class="screen-header">
+      <button class="btn-back" onclick="Server.leaveRoom()">←</button>
+      <h2 class="screen-title">Lobby</h2>
+      <div class="header-spacer"></div>
+    </div>
+    <div class="screen-body">
+
+      <div class="room-code-card">
+        <p class="room-code-label">Room Code</p>
+        <p id="lobby-room-code" class="room-code-display">------</p>
+        <div id="qr-container" class="qr-box"></div>
+        <button class="btn-outline small" onclick="Server.copyRoomLink()">Copy Join Link</button>
+      </div>
+
+      <div class="lobby-players-section">
+        <h3 class="section-label">Players (<span id="lobby-count">0</span>)</h3>
+        <div id="lobby-player-chips" class="chip-list"></div>
+      </div>
+
+      <!-- Settings (host controls) -->
+      <section class="setup-section">
+        <h3 class="section-label">Word Pack</h3>
+        <div class="pack-grid" id="server-pack-grid"></div>
+      </section>
+      <section class="setup-section">
+        <h3 class="section-label">Imposters</h3>
+        <div class="counter-row">
+          <button class="btn-counter" onclick="Server.changeImposterCount(-1)">−</button>
+          <span id="server-imposter-count" class="counter-value">1</span>
+          <button class="btn-counter" onclick="Server.changeImposterCount(1)">+</button>
+        </div>
+      </section>
+      <section class="setup-section">
+        <h3 class="section-label">Imposter gets…</h3>
+        <div class="toggle-group">
+          <button class="toggle-btn active" id="s-hint-btn" onclick="Server.setHintMode('hint')">Hint Word</button>
+          <button class="toggle-btn" id="s-nohint-btn" onclick="Server.setHintMode('none')">No Hint (??)</button>
+        </div>
+      </section>
+      <section class="setup-section">
+        <div class="toggle-row">
+          <div class="toggle-info">
+            <h3 class="section-label no-margin">Enable Troll</h3>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="server-troll-toggle" onchange="Server.setTroll(this.checked)">
+            <span class="slider-track"></span>
+          </label>
+        </div>
+      </section>
+
+      <button class="btn-start" onclick="Server.startGame()">Start Game →</button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ SERVER PLAYER VIEW -->
+  <div id="screen-server-player" class="screen">
+    <div class="screen-header">
+      <div class="header-spacer"></div>
+      <h2 id="server-room-badge" class="screen-title">Room: ——</h2>
+      <div class="header-spacer"></div>
+    </div>
+    <div id="server-player-content" class="screen-body server-content">
+      <div class="waiting-state">
+        <div class="spinner"></div>
+        <p>Waiting for host to start…</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ ROLE REVEAL MODAL -->
+  <div id="modal-role" class="modal" onclick="App.maybeCloseRoleModal(event)">
+    <div class="modal-panel">
+      <!-- Step 1: Pre-reveal -->
+      <div id="modal-pre" class="modal-state">
+        <p class="modal-only-label">Only</p>
+        <p id="modal-player-name" class="modal-big-name"></p>
+        <p class="modal-only-label">should be looking</p>
+        <button class="btn-reveal" onclick="App.revealRole()">Tap to Reveal</button>
+      </div>
+      <!-- Step 2: Role shown -->
+      <div id="modal-revealed" class="modal-state hidden">
+        <div id="modal-role-badge" class="role-badge-large"></div>
+        <div id="modal-word-area" class="modal-word-area"></div>
+        <button class="btn-done" onclick="App.closeRoleModal()">Done ✓</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ VOTE RESULT MODAL -->
+  <div id="modal-vote" class="modal" onclick="App.closeVoteModal()">
+    <div class="modal-panel vote-panel" onclick="event.stopPropagation()">
+      <div id="vote-icon" class="vote-result-icon"></div>
+      <p id="vote-name" class="vote-result-name"></p>
+      <p id="vote-verdict" class="vote-result-verdict"></p>
+      <button class="btn-done" onclick="App.closeVoteModal()">Continue</button>
+    </div>
+  </div>
+
+  <!-- Firebase compat SDK (only used in Server Mode) -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+  <script src="word-packs.js"></script>
+  <script src="firebase-config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
