@@ -1,10 +1,15 @@
 /* ─────────────────────────────────────────────────────────
-   IMPOSTER — Style Sheet
-   Design: black background, white text, minimal chrome
-   Color only appears on End Screen
+   IMPOSTER — Mobile-first style sheet
+   Target: 390px (iPhone 14) baseline, scales up from there
    ───────────────────────────────────────────────────────── */
 
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  /* prevent text size adjustment on rotation */
+  -webkit-text-size-adjust: 100%;
+}
 
 :root {
   --bg:        #000000;
@@ -14,22 +19,48 @@
   --border2:   #2a2a2a;
   --text:      #ffffff;
   --text-dim:  #888888;
-  --text-faint:#444444;
+  --text-faint:#3a3a3a;
   --radius:    14px;
-  --radius-sm: 8px;
+  --radius-sm: 10px;
   --red:       #e53935;
   --gold:      #f5c518;
+
+  /* safe area insets for notched phones */
+  --safe-top:    env(safe-area-inset-top,    0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left:   env(safe-area-inset-left,   0px);
+  --safe-right:  env(safe-area-inset-right,  0px);
 }
 
-html, body {
+html {
+  height: 100%;
+  /* prevent rubber-band scroll revealing black */
+  background: var(--bg);
+}
+
+body {
   height: 100%;
   background: var(--bg);
   color: var(--text);
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
   font-size: 16px;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   overflow: hidden;
+  /* prevent pull-to-refresh on iOS */
+  overscroll-behavior: none;
+}
+
+/* ── Touch optimisation — applied globally ─────────────── */
+
+button, a, [role="button"],
+.player-card, .pack-btn, .btn-mode {
+  /* stops double-tap zoom on interactive elements */
+  touch-action: manipulation;
+  /* removes iOS blue flash on tap */
+  -webkit-tap-highlight-color: transparent;
+  /* remove default outlines; we add focus styles where needed */
+  outline: none;
 }
 
 /* ══════════════════════════════════ SCREENS */
@@ -37,15 +68,21 @@ html, body {
 .screen {
   position: fixed;
   inset: 0;
+  /* respect notch/home-bar */
+  padding-top: var(--safe-top);
+  padding-bottom: var(--safe-bottom);
+  padding-left: var(--safe-left);
+  padding-right: var(--safe-right);
   display: flex;
   flex-direction: column;
   opacity: 0;
   pointer-events: none;
-  transform: translateY(16px);
+  transform: translateY(18px);
   transition: opacity 0.22s ease, transform 0.22s ease;
   background: var(--bg);
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
 }
 
 .screen.active {
@@ -59,14 +96,16 @@ html, body {
 .screen-header {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 16px 20px;
+  gap: 10px;
+  padding: 12px 16px;
   border-bottom: 1px solid var(--border);
   flex-shrink: 0;
   background: var(--bg);
   position: sticky;
   top: 0;
   z-index: 10;
+  /* min height keeps it tappable */
+  min-height: 60px;
 }
 
 .screen-title {
@@ -75,25 +114,46 @@ html, body {
   letter-spacing: -0.3px;
   flex: 1;
   text-align: center;
+  line-height: 1.2;
 }
 
-.header-spacer { width: 40px; flex-shrink: 0; }
-.header-center { display: flex; flex-direction: column; align-items: center; flex: 1; gap: 2px; }
-.header-badge  { font-size: 11px; color: var(--text-dim); letter-spacing: 0.5px; text-transform: uppercase; }
+.header-spacer { width: 44px; flex-shrink: 0; }
 
+.header-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  gap: 2px;
+  min-width: 0;
+}
+.header-badge {
+  font-size: 11px;
+  color: var(--text-dim);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+/* scrollable body area */
 .screen-body {
-  padding: 20px;
+  padding: 20px 16px;
   display: flex;
   flex-direction: column;
   gap: 24px;
-  padding-bottom: 40px;
+  padding-bottom: max(40px, calc(var(--safe-bottom) + 24px));
+  flex: 1;
 }
 
-/* ══════════════════════════════════ BUTTONS */
+/* ══════════════════════════════════ BUTTONS
+   Every button that is tappable: min-height 56px.
+   Main CTA buttons: 64px+ for comfort.
+   ────────────────────────────────────────── */
 
+/* Back button */
 .btn-back {
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -101,107 +161,122 @@ html, body {
   border: 1px solid var(--border2);
   border-radius: var(--radius-sm);
   color: var(--text);
-  font-size: 18px;
+  font-size: 20px;
   cursor: pointer;
   flex-shrink: 0;
-  transition: background 0.15s;
+  transition: background 0.12s;
 }
 .btn-back:active { background: var(--surface2); }
 
+/* Vote button in header */
 .btn-vote {
   background: none;
   border: 1px solid var(--border2);
   border-radius: var(--radius-sm);
   color: var(--text);
   font-size: 14px;
-  font-weight: 600;
-  padding: 8px 14px;
+  font-weight: 700;
+  padding: 10px 14px;
+  min-height: 44px;
   cursor: pointer;
   white-space: nowrap;
-  transition: background 0.15s;
+  transition: background 0.12s;
 }
 .btn-vote:active { background: var(--surface2); }
 
+/* Primary CTA — large, comfortable */
 .btn-start {
   width: 100%;
-  padding: 18px 24px;
+  padding: 20px 24px;
+  min-height: 64px;
   background: var(--text);
   color: var(--bg);
   border: none;
   border-radius: var(--radius);
-  font-size: 17px;
-  font-weight: 700;
+  font-size: 18px;
+  font-weight: 800;
   cursor: pointer;
-  letter-spacing: -0.2px;
-  transition: opacity 0.15s, transform 0.1s;
-  margin-top: 8px;
+  letter-spacing: -0.3px;
+  transition: opacity 0.12s, transform 0.1s;
+  margin-top: 4px;
 }
-.btn-start:active { opacity: 0.85; transform: scale(0.98); }
+.btn-start:active { opacity: 0.88; transform: scale(0.98); }
 
+/* Secondary outlined button */
 .btn-outline {
   width: 100%;
-  padding: 16px 24px;
+  padding: 18px 24px;
+  min-height: 60px;
   background: none;
   color: var(--text);
   border: 1px solid var(--border2);
   border-radius: var(--radius);
-  font-size: 16px;
+  font-size: 17px;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.15s;
+  transition: background 0.12s;
 }
 .btn-outline:active { background: var(--surface2); }
-.btn-outline.small { padding: 10px 16px; font-size: 14px; width: auto; }
+.btn-outline.small {
+  padding: 12px 18px;
+  min-height: 48px;
+  font-size: 14px;
+  width: auto;
+}
 
+/* Ghost / tertiary */
 .btn-ghost {
   width: 100%;
-  padding: 14px 24px;
+  padding: 16px 24px;
+  min-height: 56px;
   background: none;
   color: var(--text-dim);
   border: none;
   border-radius: var(--radius);
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 500;
   cursor: pointer;
 }
 .btn-ghost:active { color: var(--text); }
 
+/* Add-player + button */
 .btn-add {
   width: 56px;
   height: 56px;
+  min-width: 56px;
   background: var(--surface2);
   border: 1px solid var(--border2);
   border-radius: var(--radius-sm);
   color: var(--text);
-  font-size: 28px;
+  font-size: 30px;
   font-weight: 300;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  transition: background 0.15s;
+  line-height: 1;
+  transition: background 0.12s;
 }
 .btn-add:active { background: var(--border); }
 
+/* − / + counter buttons */
 .btn-counter {
-  width: 52px;
-  height: 52px;
+  width: 56px;
+  height: 56px;
   background: var(--surface2);
   border: 1px solid var(--border2);
   border-radius: var(--radius-sm);
   color: var(--text);
-  font-size: 24px;
+  font-size: 26px;
   font-weight: 300;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.15s;
+  transition: background 0.12s;
 }
 .btn-counter:active { background: var(--border); }
-
-.btn-copy { /* same as btn-outline small */ }
 
 /* ══════════════════════════════════ HOME SCREEN */
 
@@ -211,8 +286,8 @@ html, body {
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  padding: 40px 28px;
-  gap: 56px;
+  padding: max(48px, calc(var(--safe-top) + 32px)) 24px max(56px, calc(var(--safe-bottom) + 32px));
+  gap: 52px;
 }
 
 .home-logo { text-align: center; }
@@ -225,27 +300,28 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 36px;
+  /* responsive font: clamp(min, preferred, max) */
+  font-size: clamp(28px, 8vw, 40px);
   font-weight: 900;
   margin: 0 auto 20px;
   color: var(--text-dim);
-  letter-spacing: -2px;
 }
 
 .home-title {
-  font-size: 48px;
+  /* 390px → ~48px, larger screens → up to 60px */
+  font-size: clamp(44px, 12vw, 60px);
   font-weight: 900;
-  letter-spacing: -3px;
+  letter-spacing: clamp(-3px, -0.8vw, -2px);
   line-height: 1;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
 
 .home-sub {
-  font-size: 14px;
+  font-size: 13px;
   color: var(--text-dim);
-  letter-spacing: 2px;
+  letter-spacing: 2.5px;
   text-transform: uppercase;
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .home-buttons {
@@ -253,43 +329,46 @@ html, body {
   flex-direction: column;
   gap: 12px;
   width: 100%;
-  max-width: 360px;
+  max-width: 380px;
 }
 
+/* Mode buttons on home screen */
 .btn-mode {
   display: flex;
   align-items: center;
   gap: 16px;
-  padding: 20px 22px;
+  padding: 22px 20px;
+  min-height: 80px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   cursor: pointer;
   text-align: left;
-  transition: border-color 0.15s, background 0.15s;
+  transition: border-color 0.12s, background 0.12s;
   width: 100%;
   color: var(--text);
 }
 .btn-mode:active { background: var(--surface2); border-color: var(--border2); }
 
-.btn-mode-icon { font-size: 28px; flex-shrink: 0; }
-.btn-mode-text { display: flex; flex-direction: column; gap: 2px; }
-.btn-mode-label { font-size: 17px; font-weight: 700; }
-.btn-mode-desc { font-size: 13px; color: var(--text-dim); }
+.btn-mode-icon { font-size: 30px; flex-shrink: 0; }
+.btn-mode-text { display: flex; flex-direction: column; gap: 3px; }
+.btn-mode-label { font-size: 18px; font-weight: 700; }
+.btn-mode-desc  { font-size: 13px; color: var(--text-dim); }
 
 /* ══════════════════════════════════ SETUP */
 
 .setup-section { display: flex; flex-direction: column; gap: 12px; }
 
 .section-label {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
-  letter-spacing: 1px;
+  letter-spacing: 1.2px;
   text-transform: uppercase;
   color: var(--text-dim);
 }
 .section-label.no-margin { margin: 0; }
 
+/* Text inputs */
 .text-input {
   flex: 1;
   height: 56px;
@@ -297,51 +376,71 @@ html, body {
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   color: var(--text);
-  font-size: 16px;
+  font-size: 16px;       /* never below 16px — prevents iOS zoom-in */
   font-family: inherit;
   padding: 0 16px;
   outline: none;
   transition: border-color 0.15s;
   min-width: 0;
+  -webkit-appearance: none;
+  appearance: none;
 }
 .text-input::placeholder { color: var(--text-faint); }
-.text-input:focus { border-color: var(--border2); }
-.text-input.code-input { text-transform: uppercase; letter-spacing: 4px; font-weight: 700; font-size: 18px; }
+.text-input:focus { border-color: #444; }
+
+/* Room-code input: large, spaced characters */
+.text-input.code-input {
+  text-transform: uppercase;
+  letter-spacing: 6px;
+  font-weight: 800;
+  font-size: 20px;
+  text-align: center;
+}
 
 .add-player-row {
   display: flex;
-  gap: 8px;
+  gap: 10px;
   align-items: center;
 }
 
 /* Player chips */
-.chip-list { display: flex; flex-wrap: wrap; gap: 8px; min-height: 10px; }
+.chip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-height: 10px;
+}
 
 .player-chip {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
+  gap: 6px;
+  padding: 10px 14px;
   background: var(--surface2);
   border: 1px solid var(--border);
   border-radius: 100px;
   font-size: 15px;
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .chip-remove {
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
   background: none;
   border: none;
   color: var(--text-dim);
-  font-size: 18px;
+  font-size: 20px;
   cursor: pointer;
-  line-height: 1;
-  padding: 0;
   display: flex;
   align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background 0.12s;
 }
+.chip-remove:active { background: var(--border); color: var(--text); }
 
-/* Pack grid */
+/* Word pack grid — 2 cols on 390px, overflow-hidden keeps cards from escaping */
 .pack-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -352,7 +451,8 @@ html, body {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 12px 14px;
+  padding: 14px 12px;
+  min-height: 56px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
@@ -361,7 +461,8 @@ html, body {
   font-weight: 500;
   cursor: pointer;
   text-align: left;
-  transition: border-color 0.15s, color 0.15s;
+  transition: border-color 0.12s, color 0.12s, background 0.12s;
+  width: 100%;
 }
 .pack-btn.selected {
   border-color: var(--text);
@@ -370,23 +471,24 @@ html, body {
 }
 .pack-btn:active { background: var(--surface2); }
 
-.pack-emoji { font-size: 18px; flex-shrink: 0; }
-.pack-name { font-size: 12px; line-height: 1.3; }
+.pack-emoji { font-size: 20px; flex-shrink: 0; }
+.pack-name  { font-size: 12px; line-height: 1.3; }
 
-/* Counter */
+/* Imposter counter */
 .counter-row {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 24px;
 }
 .counter-value {
-  font-size: 32px;
-  font-weight: 800;
-  min-width: 48px;
+  font-size: 36px;
+  font-weight: 900;
+  min-width: 52px;
   text-align: center;
+  font-variant-numeric: tabular-nums;
 }
 
-/* Toggle group */
+/* Hint / No-hint toggle group */
 .toggle-group {
   display: flex;
   background: var(--surface);
@@ -396,52 +498,65 @@ html, body {
 }
 .toggle-btn {
   flex: 1;
-  padding: 14px;
+  padding: 16px 12px;
+  min-height: 56px;
   background: none;
   border: none;
   color: var(--text-dim);
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.15s, color 0.15s;
+  transition: background 0.12s, color 0.12s;
+  font-family: inherit;
 }
 .toggle-btn.active {
   background: var(--surface2);
   color: var(--text);
 }
+.toggle-btn:active { background: var(--border); }
 
-/* Toggle switch */
+/* Troll toggle row */
 .toggle-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
+  min-height: 56px;
+  padding: 4px 0;
 }
 .toggle-info { display: flex; flex-direction: column; gap: 4px; }
-.setting-desc { font-size: 12px; color: var(--text-dim); }
+.setting-desc { font-size: 12px; color: var(--text-dim); line-height: 1.4; }
 
-.switch { position: relative; display: inline-block; width: 52px; height: 30px; flex-shrink: 0; }
+/* iOS-style switch */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 54px;
+  height: 32px;
+  flex-shrink: 0;
+  touch-action: manipulation;
+}
 .switch input { opacity: 0; width: 0; height: 0; }
 .slider-track {
   position: absolute;
   inset: 0;
   background: var(--border);
-  border-radius: 30px;
+  border-radius: 32px;
   cursor: pointer;
   transition: background 0.2s;
 }
 .slider-track::before {
   content: '';
   position: absolute;
-  width: 22px;
-  height: 22px;
+  width: 24px;
+  height: 24px;
   left: 4px;
   top: 4px;
   background: var(--text-dim);
   border-radius: 50%;
   transition: transform 0.2s, background 0.2s;
 }
-.switch input:checked + .slider-track { background: var(--surface2); }
+.switch input:checked + .slider-track { background: #1a1a1a; border: 1px solid #444; }
 .switch input:checked + .slider-track::before {
   transform: translateX(22px);
   background: var(--text);
@@ -450,89 +565,117 @@ html, body {
 /* ══════════════════════════════════ PLAYER LIST */
 
 .reveal-hint {
-  padding: 12px 20px;
+  padding: 12px 16px;
   border-bottom: 1px solid var(--border);
   flex-shrink: 0;
 }
-.reveal-hint p { font-size: 13px; color: var(--text-dim); text-align: center; }
+.reveal-hint p {
+  font-size: 14px;
+  color: var(--text-dim);
+  text-align: center;
+}
 
+/* Card grid — 2 cols at mobile, 3 at wider */
 .cards-grid {
-  padding: 16px;
+  padding: 14px 14px;
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 10px;
   align-content: start;
 }
 
+/* Player cards — generous tap target */
 .player-card {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  padding: 24px 16px;
+  gap: 8px;
+  padding: 28px 14px;
+  min-height: 120px;     /* comfortable tap target */
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   cursor: pointer;
-  min-height: 110px;
-  transition: border-color 0.15s, background 0.15s, opacity 0.15s;
   text-align: center;
   position: relative;
+  transition: border-color 0.12s, background 0.12s, opacity 0.15s;
+  /* prevent accidental text selection on rapid taps */
+  -webkit-user-select: none;
+  user-select: none;
 }
-.player-card:active:not(.eliminated) { background: var(--surface2); border-color: var(--border2); }
-
-.player-card.revealed {
+.player-card:active:not(.eliminated) {
+  background: var(--surface2);
   border-color: var(--border2);
+  transform: scale(0.97);
 }
+
+/* Revealed tick */
 .player-card.revealed::after {
   content: '✓';
   position: absolute;
   top: 8px;
   right: 10px;
-  font-size: 12px;
+  font-size: 13px;
   color: var(--text-dim);
 }
 
+/* Eliminated cards */
 .player-card.eliminated {
-  opacity: 0.3;
+  opacity: 0.25;
   cursor: default;
   pointer-events: none;
-  text-decoration: line-through;
 }
 
 .card-name {
-  font-size: 17px;
-  font-weight: 700;
+  font-size: 18px;     /* easily readable at arm's length */
+  font-weight: 800;
   letter-spacing: -0.3px;
   word-break: break-word;
+  line-height: 1.2;
 }
 .card-status {
   font-size: 11px;
   color: var(--text-dim);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.8px;
+  font-weight: 600;
 }
 
-/* Voting mode cards */
+/* Voting mode — bright borders to indicate interactivity */
 .voting-mode .player-card:not(.eliminated) {
   border-color: var(--border2);
+  min-height: 130px; /* slightly bigger on vote screen */
 }
 .voting-mode .player-card:not(.eliminated):active {
   background: var(--surface2);
+  transform: scale(0.97);
 }
 
-/* ══════════════════════════════════ MODALS */
+/* Voting hint bar */
+.voting-hint {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+  font-size: 15px;
+  color: var(--text-dim);
+  text-align: center;
+  flex-shrink: 0;
+}
+
+/* ══════════════════════════════════ MODALS
+   On mobile: takes up ~90% of screen height, centered
+   Role reveal: effectively full-screen for drama
+   ─────────────────────────────────────────── */
 
 .modal {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.92);
+  background: rgba(0, 0, 0, 0.95);
   display: flex;
-  align-items: center;
+  align-items: flex-end;    /* sheet rises from bottom on mobile */
   justify-content: center;
   z-index: 100;
-  padding: 24px;
+  padding: 0;
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.2s ease;
@@ -545,120 +688,156 @@ html, body {
 .modal-panel {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 20px;
-  padding: 32px 28px;
+  border-top-left-radius: 24px;
+  border-top-right-radius: 24px;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  padding: 12px 24px max(32px, calc(var(--safe-bottom) + 20px));
   width: 100%;
-  max-width: 340px;
+  max-width: 480px;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 20px;
   text-align: center;
-  transform: translateY(12px);
-  transition: transform 0.2s ease;
+  /* slide up from bottom */
+  transform: translateY(40px);
+  transition: transform 0.25s cubic-bezier(0.32, 0.72, 0, 1);
+  max-height: 92vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 .modal.active .modal-panel { transform: translateY(0); }
 
-.modal-state { display: flex; flex-direction: column; align-items: center; gap: 16px; width: 100%; }
+/* Drag handle pill */
+.modal-panel::before {
+  content: '';
+  width: 40px;
+  height: 4px;
+  background: var(--border2);
+  border-radius: 4px;
+  margin-top: 4px;
+  flex-shrink: 0;
+}
+
+.modal-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  padding-top: 8px;
+}
 .modal-state.hidden { display: none; }
 
 .modal-only-label {
   font-size: 13px;
   color: var(--text-dim);
   text-transform: uppercase;
-  letter-spacing: 1px;
-  font-weight: 600;
+  letter-spacing: 1.5px;
+  font-weight: 700;
 }
 .modal-big-name {
-  font-size: 34px;
+  font-size: clamp(32px, 9vw, 44px);
   font-weight: 900;
   letter-spacing: -1.5px;
   line-height: 1.1;
 }
 
+/* "Tap to Reveal" — large, obvious */
 .btn-reveal {
   width: 100%;
-  padding: 18px;
+  padding: 22px;
+  min-height: 68px;
   background: var(--text);
   color: var(--bg);
   border: none;
   border-radius: var(--radius);
-  font-size: 17px;
-  font-weight: 700;
+  font-size: 18px;
+  font-weight: 800;
   cursor: pointer;
   margin-top: 8px;
-  transition: opacity 0.15s;
+  transition: opacity 0.12s, transform 0.1s;
+  font-family: inherit;
 }
-.btn-reveal:active { opacity: 0.85; }
+.btn-reveal:active { opacity: 0.88; transform: scale(0.98); }
 
+/* Done button in modal */
 .btn-done {
   width: 100%;
-  padding: 16px;
+  padding: 18px;
+  min-height: 60px;
   background: none;
   color: var(--text);
   border: 1px solid var(--border2);
   border-radius: var(--radius);
-  font-size: 16px;
-  font-weight: 600;
+  font-size: 17px;
+  font-weight: 700;
   cursor: pointer;
-  transition: background 0.15s;
+  font-family: inherit;
+  transition: background 0.12s;
 }
 .btn-done:active { background: var(--surface2); }
 
-/* Role badge in modal */
+/* Role badge in modal — stays white/neutral; color only on end screen */
 .role-badge-large {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 800;
-  letter-spacing: 3px;
+  letter-spacing: 4px;
   text-transform: uppercase;
-  padding: 8px 20px;
+  padding: 10px 24px;
   border-radius: 100px;
   border: 1px solid var(--border2);
   color: var(--text);
   background: var(--surface2);
 }
-/* roles in modal stay white — color only on end screen */
 
-/* Word area in modal */
-.modal-word-area { display: flex; flex-direction: column; gap: 6px; width: 100%; }
+/* Word area — big readable text */
+.modal-word-area {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+}
 .word-label {
   font-size: 11px;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 1.5px;
   color: var(--text-dim);
-  font-weight: 600;
+  font-weight: 700;
 }
 .word-value {
-  font-size: 30px;
+  font-size: clamp(28px, 8vw, 38px);  /* 28px minimum as specified */
   font-weight: 900;
   letter-spacing: -1px;
-  line-height: 1.1;
+  line-height: 1.15;
   color: var(--text);
 }
 .word-value.mystery {
-  font-size: 36px;
-  letter-spacing: 8px;
+  font-size: clamp(32px, 9vw, 44px);
+  letter-spacing: 10px;
   color: var(--text-faint);
 }
 
-/* Vote result modal */
-.vote-panel { gap: 12px; }
-
+/* Vote result modal — same bottom-sheet treatment */
+.vote-panel {
+  gap: 14px;
+}
 .vote-result-icon {
-  font-size: 52px;
+  font-size: 56px;
   line-height: 1;
+  padding-top: 4px;
 }
 .vote-result-name {
-  font-size: 26px;
-  font-weight: 800;
+  font-size: clamp(24px, 7vw, 32px);
+  font-weight: 900;
   letter-spacing: -0.8px;
 }
 .vote-result-verdict {
-  font-size: 15px;
+  font-size: 16px;
   color: var(--text-dim);
   font-weight: 600;
 }
-/* Keep white in vote modal — revelation only at end */
 
 /* ══════════════════════════════════ END SCREEN */
 
@@ -668,83 +847,104 @@ html, body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 40px 24px 60px;
-  gap: 32px;
+  padding: max(40px, calc(var(--safe-top) + 24px)) 20px max(60px, calc(var(--safe-bottom) + 32px));
+  gap: 28px;
   min-height: 100vh;
 }
 
 .end-banner { text-align: center; }
 
 .end-result {
-  font-size: 36px;
+  font-size: clamp(32px, 9vw, 44px);
   font-weight: 900;
   letter-spacing: -1.5px;
   line-height: 1.1;
 }
-.crew-wins    { color: var(--text); }
+.crew-wins     { color: var(--text); }
 .imposter-wins { color: var(--red); }
 
 .end-subtitle {
   font-size: 15px;
   color: var(--text-dim);
-  margin-top: 6px;
+  margin-top: 8px;
 }
 
+/* Word reveal box */
 .end-word-box {
   text-align: center;
-  padding: 20px 28px;
+  padding: 20px 24px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   width: 100%;
-  max-width: 360px;
+  max-width: 380px;
 }
-.end-word-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-dim); font-weight: 600; margin-bottom: 6px; }
-.end-word-value { font-size: 32px; font-weight: 900; letter-spacing: -1px; }
+.end-word-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--text-dim);
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+.end-word-value {
+  font-size: clamp(28px, 8vw, 38px);
+  font-weight: 900;
+  letter-spacing: -1px;
+}
 
+/* Roles list */
 .end-roles {
   display: flex;
   flex-direction: column;
   gap: 8px;
   width: 100%;
-  max-width: 360px;
+  max-width: 380px;
 }
 
 .end-role-row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 14px 18px;
+  padding: 16px 18px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  gap: 12px;
+  gap: 10px;
 }
 
-/* Color reveals on end screen */
-.end-imposter  { border-color: var(--red);  }
-.end-troll     { border-color: var(--gold); }
-.end-crewmate  { border-color: var(--border); }
+/* Color borders only on end screen */
+.end-imposter { border-color: rgba(229, 57, 53, 0.6); }
+.end-troll    { border-color: rgba(245, 197, 24, 0.6); }
+.end-crewmate { border-color: var(--border); }
 
-.end-player-name { font-size: 16px; font-weight: 700; flex: 1; }
+.end-player-name {
+  font-size: 17px;
+  font-weight: 700;
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 
 .end-role-tag {
   font-size: 11px;
   font-weight: 800;
   letter-spacing: 1.5px;
   text-transform: uppercase;
-  padding: 4px 10px;
+  padding: 5px 12px;
   border-radius: 100px;
+  flex-shrink: 0;
 }
-.end-imposter .end-role-tag  { background: rgba(229,57,53,0.15); color: var(--red); }
-.end-troll    .end-role-tag  { background: rgba(245,197,24,0.15); color: var(--gold); }
-.end-crewmate .end-role-tag  { background: var(--surface2); color: var(--text-dim); }
+.end-imposter .end-role-tag { background: rgba(229, 57, 53, 0.15); color: var(--red); }
+.end-troll    .end-role-tag { background: rgba(245, 197, 24, 0.15); color: var(--gold); }
+.end-crewmate .end-role-tag { background: var(--surface2); color: var(--text-dim); }
 
 .end-out-badge {
   font-size: 10px;
   color: var(--text-faint);
   font-weight: 600;
-  letter-spacing: 0.5px;
+  flex-shrink: 0;
 }
 
 .end-buttons {
@@ -752,7 +952,7 @@ html, body {
   flex-direction: column;
   gap: 10px;
   width: 100%;
-  max-width: 360px;
+  max-width: 380px;
 }
 
 /* ══════════════════════════════════ SERVER MODE */
@@ -763,7 +963,7 @@ html, body {
   gap: 12px;
   color: var(--text-faint);
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 600;
 }
 .divider::before, .divider::after {
   content: '';
@@ -774,21 +974,28 @@ html, body {
 
 .join-section { display: flex; flex-direction: column; gap: 10px; }
 
+/* Room code card */
 .room-code-card {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 24px;
+  padding: 24px 20px;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 14px;
 }
-.room-code-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-dim); font-weight: 600; }
+.room-code-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--text-dim);
+  font-weight: 700;
+}
 .room-code-display {
-  font-size: 44px;
+  font-size: clamp(38px, 10vw, 50px);
   font-weight: 900;
-  letter-spacing: 10px;
+  letter-spacing: clamp(6px, 2vw, 12px);
   line-height: 1;
   font-variant-numeric: tabular-nums;
 }
@@ -805,22 +1012,36 @@ html, body {
 .lobby-players-section { display: flex; flex-direction: column; gap: 10px; }
 
 .lobby-chip {
-  padding: 8px 14px;
+  display: inline-flex;
+  padding: 10px 16px;
   background: var(--surface2);
   border: 1px solid var(--border);
   border-radius: 100px;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
 }
 
 /* Server player view */
-.server-content { align-items: center; justify-content: center; min-height: 80vh; }
+.server-content {
+  align-items: center;
+  justify-content: center;
+  min-height: 70vh;
+}
 
-.waiting-state { display: flex; flex-direction: column; align-items: center; gap: 16px; color: var(--text-dim); }
+.waiting-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  color: var(--text-dim);
+  font-size: 16px;
+  padding: 40px 20px;
+  text-align: center;
+}
 
 .spinner {
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   border: 2px solid var(--border);
   border-top-color: var(--text-dim);
   border-radius: 50%;
@@ -834,29 +1055,32 @@ html, body {
   align-items: center;
   gap: 24px;
   width: 100%;
-  max-width: 320px;
   text-align: center;
-  padding: 20px;
+  padding: 32px 20px max(32px, calc(var(--safe-bottom) + 20px));
 }
 
 .server-role-badge {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 800;
-  letter-spacing: 3px;
+  letter-spacing: 4px;
   text-transform: uppercase;
-  padding: 10px 24px;
+  padding: 12px 28px;
   border-radius: 100px;
   border: 1px solid var(--border2);
   color: var(--text);
   background: var(--surface2);
 }
 
-.server-word-area { display: flex; flex-direction: column; gap: 6px; }
-
+.server-word-area {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
 .server-hint-text {
-  font-size: 13px;
+  font-size: 14px;
   color: var(--text-dim);
   margin-top: 8px;
+  line-height: 1.5;
 }
 
 .server-voting-area {
@@ -866,24 +1090,55 @@ html, body {
   gap: 16px;
   padding: 16px;
 }
-.server-voting-area h3 { text-align: center; font-size: 20px; font-weight: 800; }
+.server-voting-area h3 {
+  text-align: center;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
 
 .server-voted-notice {
   text-align: center;
-  padding: 20px;
+  padding: 24px 20px;
   color: var(--text-dim);
-  font-size: 15px;
+  font-size: 16px;
+  line-height: 1.5;
 }
 
-/* ══════════════════════════════════ UTILITIES */
+/* ══════════════════════════════════ SHAKE ANIMATION */
 
-@media (min-width: 480px) {
-  .cards-grid { grid-template-columns: repeat(3, 1fr); }
-  .pack-grid  { grid-template-columns: repeat(3, 1fr); }
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25%       { transform: translateX(-7px); }
+  75%       { transform: translateX(7px); }
 }
 
+/* ══════════════════════════════════ RESPONSIVE BREAKPOINTS */
+
+/* Wider phones / tablets — 3-column card grid */
+@media (min-width: 500px) {
+  .cards-grid      { grid-template-columns: repeat(3, 1fr); }
+  .pack-grid       { grid-template-columns: repeat(3, 1fr); }
+}
+
+/* Desktop / large tablet — center and cap width */
 @media (min-width: 700px) {
-  .screen-body { max-width: 480px; margin: 0 auto; }
-  .home-content { max-width: 400px; margin: 0 auto; }
-  .cards-grid { max-width: 600px; margin: 0 auto; width: 100%; }
+  .screen-body     { max-width: 500px; margin: 0 auto; width: 100%; }
+  .home-content    { max-width: 420px; margin: 0 auto; }
+  .cards-grid      { max-width: 600px; margin: 0 auto; width: 100%; grid-template-columns: repeat(3, 1fr); }
+  .pack-grid       { grid-template-columns: repeat(4, 1fr); }
+
+  /* On desktop the modal can be centred rather than bottom-sheet */
+  .modal           { align-items: center; padding: 24px; }
+  .modal-panel     {
+    border-radius: 20px;
+    border-bottom-left-radius: 20px;
+    border-bottom-right-radius: 20px;
+    max-height: 85vh;
+    max-width: 400px;
+    padding: 28px 28px 28px;
+  }
+  .modal-panel::before { display: none; }
+
+  .end-content     { max-width: 460px; margin: 0 auto; }
 }

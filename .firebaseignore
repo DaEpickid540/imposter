@@ -1,0 +1,12 @@
+# Firebase Hosting — only ship the 5 game files
+**/.git/**
+**/.git
+.gitignore
+**/.claude/**
+**/.firebase/**
+.firebaserc
+firebase.json
+database.rules.json
+CHANGES.md
+*.md
+node_modules/
