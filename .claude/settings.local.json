@@ -21,7 +21,10 @@
       "Bash(git commit -m '@ *)",
       "PowerShell(git add -A)",
       "PowerShell(git commit -m \"feat: custom words, My Packs, light/dark mode, server mode redesign, PWA + devil/angel icon, favicon, centered layout\")",
-      "PowerShell(firebase deploy --only hosting --project imposter-web-game)"
+      "PowerShell(firebase deploy --only hosting --project imposter-web-game)",
+      "PowerShell(git commit -m \"chore: update settings, firebase config, and index.html\")",
+      "PowerShell(git commit -m \"chore: config + index updates\")",
+      "PowerShell(git add .claude/settings.local.json)"
     ]
   }
 }
