@@ -11,25 +11,74 @@
   -webkit-text-size-adjust: 100%;
 }
 
+/* ── Dark theme (default) ─────────────────────────────────── */
 :root {
-  --bg:        #000000;
-  --surface:   #0d0d0d;
-  --surface2:  #111111;
-  --border:    #222222;
-  --border2:   #2a2a2a;
-  --text:      #ffffff;
-  --text-dim:  #888888;
-  --text-faint:#3a3a3a;
-  --radius:    14px;
-  --radius-sm: 10px;
-  --red:       #e53935;
-  --gold:      #f5c518;
+  --bg:              #000000;
+  --surface:         #0d0d0d;
+  --surface2:        #111111;
+  --border:          #222222;
+  --border2:         #2a2a2a;
+  --text:            #ffffff;
+  --text-dim:        #888888;
+  --text-faint:      #3a3a3a;
+  --focus-border:    #555555;
+  --switch-on-bg:    #2a2a2a;
+  --switch-on-bdr:   #555555;
+  --radius:          14px;
+  --radius-sm:       10px;
+  --red:             #e53935;
+  --gold:            #f5c518;
 
   /* safe area insets for notched phones */
   --safe-top:    env(safe-area-inset-top,    0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --safe-left:   env(safe-area-inset-left,   0px);
   --safe-right:  env(safe-area-inset-right,  0px);
+}
+
+/* ── Light theme (OS preference) ─────────────────────────── */
+@media (prefers-color-scheme: light) {
+  :root {
+    --bg:           #ffffff;
+    --surface:      #f5f5f5;
+    --surface2:     #ebebeb;
+    --border:       #e0e0e0;
+    --border2:      #d0d0d0;
+    --text:         #111111;
+    --text-dim:     #555555;
+    --text-faint:   #aaaaaa;
+    --focus-border: #999999;
+    --switch-on-bg: #555555;
+    --switch-on-bdr:#888888;
+  }
+}
+
+/* ── Manual theme override (set via data-theme on <html>) ─── */
+[data-theme="dark"] {
+  --bg:           #000000;
+  --surface:      #0d0d0d;
+  --surface2:     #111111;
+  --border:       #222222;
+  --border2:      #2a2a2a;
+  --text:         #ffffff;
+  --text-dim:     #888888;
+  --text-faint:   #3a3a3a;
+  --focus-border: #555555;
+  --switch-on-bg: #2a2a2a;
+  --switch-on-bdr:#555555;
+}
+[data-theme="light"] {
+  --bg:           #ffffff;
+  --surface:      #f5f5f5;
+  --surface2:     #ebebeb;
+  --border:       #e0e0e0;
+  --border2:      #d0d0d0;
+  --text:         #111111;
+  --text-dim:     #555555;
+  --text-faint:   #aaaaaa;
+  --focus-border: #999999;
+  --switch-on-bg: #555555;
+  --switch-on-bdr:#888888;
 }
 
 html {
@@ -365,7 +414,11 @@ button, a, [role="button"],
   letter-spacing: 1.2px;
   text-transform: uppercase;
   color: var(--text-dim);
+  text-align: center;
 }
+/* When label shares a row with another element, keep it left-aligned */
+.section-header-row .section-label,
+.toggle-row .section-label { text-align: left; }
 .section-label.no-margin { margin: 0; }
 
 /* Text inputs */
@@ -386,7 +439,7 @@ button, a, [role="button"],
   appearance: none;
 }
 .text-input::placeholder { color: var(--text-faint); }
-.text-input:focus { border-color: #444; }
+.text-input:focus { border-color: var(--focus-border); }
 
 /* Room-code input: large, spaced characters */
 .text-input.code-input {
@@ -409,6 +462,7 @@ button, a, [role="button"],
   flex-wrap: wrap;
   gap: 8px;
   min-height: 10px;
+  justify-content: center;
 }
 
 .player-chip {
@@ -478,6 +532,7 @@ button, a, [role="button"],
 .counter-row {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 24px;
 }
 .counter-value {
@@ -508,6 +563,7 @@ button, a, [role="button"],
   cursor: pointer;
   transition: background 0.12s, color 0.12s;
   font-family: inherit;
+  text-align: center;
 }
 .toggle-btn.active {
   background: var(--surface2);
@@ -556,10 +612,10 @@ button, a, [role="button"],
   border-radius: 50%;
   transition: transform 0.2s, background 0.2s;
 }
-.switch input:checked + .slider-track { background: #1a1a1a; border: 1px solid #444; }
+.switch input:checked + .slider-track { background: var(--switch-on-bg); border: 1px solid var(--switch-on-bdr); }
 .switch input:checked + .slider-track::before {
   transform: translateX(22px);
-  background: var(--text);
+  background: #ffffff;
 }
 
 /* ══════════════════════════════════ PLAYER LIST */
@@ -1112,6 +1168,34 @@ button, a, [role="button"],
   25%       { transform: translateX(-7px); }
   75%       { transform: translateX(7px); }
 }
+
+/* ══════════════════════════════════ UTILITY */
+
+.hidden { display: none !important; }
+
+/* ══════════════════════════════════ THEME TOGGLE */
+
+.btn-theme-toggle {
+  position: absolute;
+  top: max(16px, var(--safe-top));
+  right: 16px;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 20px;
+  cursor: pointer;
+  z-index: 5;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.12s;
+  line-height: 1;
+}
+.btn-theme-toggle:active { background: var(--surface2); }
 
 /* ══════════════════════════════════ RESPONSIVE BREAKPOINTS */
 

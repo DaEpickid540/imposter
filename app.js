@@ -233,6 +233,34 @@ const App = {
     state.roundNumber++;
     App.startGame();
   },
+
+  // ── Theme (light / dark) ───────────────────────────────
+
+  toggleTheme() {
+    const current = App._effectiveTheme();
+    const next    = current === 'dark' ? 'light' : 'dark';
+    document.documentElement.dataset.theme = next;
+    localStorage.setItem('imposter_theme', next);
+    App._updateThemeBtn();
+  },
+
+  _effectiveTheme() {
+    const manual = document.documentElement.dataset.theme;
+    if (manual) return manual;
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  },
+
+  _updateThemeBtn() {
+    const btn = document.getElementById('theme-toggle-btn');
+    if (!btn) return;
+    btn.textContent = App._effectiveTheme() === 'dark' ? '☀️' : '🌙';
+  },
+
+  _initTheme() {
+    const saved = localStorage.getItem('imposter_theme');
+    if (saved) document.documentElement.dataset.theme = saved;
+    App._updateThemeBtn();
+  },
 };
 
 // ── Game Logic ───────────────────────────────────────────────
@@ -765,6 +793,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const input = document.getElementById('player-name-input');
   if (input) input.addEventListener('keydown', e => { if (e.key === 'Enter') App.addPlayer(); });
 
+  App._initTheme();
   UI.renderPackGrid('pack-grid');
   checkURLRoom();
 });
