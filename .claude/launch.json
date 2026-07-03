@@ -4,8 +4,9 @@
     {
       "name": "imposter-game",
       "runtimeExecutable": "npx",
-      "runtimeArgs": ["serve", "-p", "5173", "-s", "."],
-      "port": 5173
+      "runtimeArgs": ["serve", "-s", "."],
+      "port": 5173,
+      "autoPort": true
     }
   ]
 }

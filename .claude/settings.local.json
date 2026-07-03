@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(firebase hosting:sites:create imposter-game --project imposter-web-game 2>&1)",
+      "PowerShell(firebase hosting:sites:create imposter --project imposter-web-game 2>&1)",
+      "PowerShell(firebase hosting:sites:create theimposter --project imposter-web-game 2>&1)",
+      "PowerShell(firebase deploy --only hosting --project imposter-web-game 2>&1)",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(firebase deploy *)",
+      "PowerShell(node -e \"require\\('canvas'\\)\" 2>&1)",
+      "PowerShell(if \\($LASTEXITCODE -ne 0\\) { \"canvas not available\" } else { \"canvas available\" })",
+      "PowerShell(node -e \"require\\('sharp'\\)\" 2>&1)",
+      "PowerShell(if \\($LASTEXITCODE -ne 0\\) { \"sharp not available\" } else { \"sharp available\" })",
+      "Bash(node \"C:\\\\Users\\\\daepi\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\C--Users-daepi-OneDrive-Pictures-Documents-GitHub-imposter\\\\ca747a21-416d-493d-bdc6-eeb0faeeecc2\\\\scratchpad\\\\gen-icons.js\")",
+      "Bash(node -e \"const fs=require\\('fs'\\); const b=fs.readFileSync\\('C:/Users/daepi/OneDrive/Pictures/Documents/GitHub/imposter/icons/icon-192.png'\\); console.log\\('192 sig:', b.slice\\(0,8\\).toString\\('hex'\\)\\); console.log\\('192 size:', b.length\\); const b2=fs.readFileSync\\('C:/Users/daepi/OneDrive/Pictures/Documents/GitHub/imposter/icons/icon-512.png'\\); console.log\\('512 size:', b2.length\\);\")",
+      "Bash(node -e \"require\\('canvas'\\); console.log\\('ok'\\)\")",
+      "Bash(git checkout *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(Remove-Item \"C:\\\\Users\\\\daepi\\\\OneDrive\\\\Pictures\\\\Documents\\\\GitHub\\\\imposter\\\\.git\\\\index.lock\" -Force)",
+      "Bash(git commit -m '@ *)",
+      "PowerShell(git add -A)"
+    ]
+  }
+}
