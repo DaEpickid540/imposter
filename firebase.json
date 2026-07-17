@@ -1,6 +1,6 @@
 {
   "hosting": {
-    "site": "theimposter",
+    "target": "imposter",
     "public": ".",
     "ignore": [
       "firebase.json",

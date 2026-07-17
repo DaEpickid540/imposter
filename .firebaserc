@@ -1,5 +1,15 @@
 {
   "projects": {
-    "default": "imposter-web-game"
-  }
+    "default": "game-suite-5d189"
+  },
+  "targets": {
+    "game-suite-5d189": {
+      "hosting": {
+        "imposter": [
+          "theimposter-game"
+        ]
+      }
+    }
+  },
+  "etags": {}
 }
