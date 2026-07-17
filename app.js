@@ -724,9 +724,14 @@ const Server = {
   name:     null,
   ref:      null,
 
-  _db() {
+  async _db() {
     if (typeof firebase === 'undefined') {
       alert('Firebase not configured. Server mode requires Firebase.');
+      return null;
+    }
+    await window.FIREBASE_AUTH_READY;
+    if (!firebase.auth().currentUser) {
+      alert('Could not connect to server (sign-in failed). Check your connection and try again.');
       return null;
     }
     return firebase.database();
@@ -740,7 +745,7 @@ const Server = {
   },
 
   async createRoom() {
-    const db = Server._db();
+    const db = await Server._db();
     if (!db) return;
 
     const hostName = prompt('Enter your display name:');
@@ -771,7 +776,7 @@ const Server = {
   },
 
   async joinRoom() {
-    const db   = Server._db();
+    const db   = await Server._db();
     if (!db) return;
 
     const name = document.getElementById('join-name-input').value.trim();

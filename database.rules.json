@@ -2,17 +2,17 @@
   "rules": {
     "rooms": {
       "$roomCode": {
-        ".read": true,
-        ".write": true,
+        ".read": "auth != null",
+        ".write": "auth != null",
         "players": {
           "$playerName": {
-            ".read": true,
-            ".write": true
+            ".read": "auth != null",
+            ".write": "auth != null"
           }
         },
         "roles": {
-          ".read": true,
-          ".write": "data.parent().child('host').exists()"
+          ".read": "auth != null",
+          ".write": "auth != null && data.parent().child('host').exists()"
         }
       }
     }
